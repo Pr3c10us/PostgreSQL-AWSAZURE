@@ -19,9 +19,9 @@ resource "aws_subnet" "private" {
 
 resource "aws_subnet" "public" {
   count = var.subnet_count
-
   vpc_id            = aws_vpc.main.id
   cidr_block        = cidrsubnet(var.cidr_block, 4, count.index * 2 + 2)
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "public-subnet-${count.index}"
@@ -40,6 +40,8 @@ resource "aws_network_acl" "public" {
     from_port  = 80
     to_port    = 80
   }
+
+  
 
   ingress {
     protocol   = "tcp"
@@ -67,7 +69,14 @@ resource "aws_network_acl" "public" {
     from_port  = 1024
     to_port    = 65535
   }
-
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 600
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
   ingress {
     protocol   = -1
     rule_no    = 1000

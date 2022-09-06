@@ -1,3 +1,10 @@
+data "azurerm_subscription" "primary" {
+}
+
+data "azurerm_client_config" "example" {
+}
+
+
 resource "azurerm_virtual_network" "network" {
   name                = var.network_name
   location            = var.location
@@ -23,3 +30,5 @@ resource "azurerm_subnet" "public" {
   virtual_network_name = azurerm_virtual_network.network.name
   address_prefixes     = [cidrsubnet(var.cidr_block, 4, count.index * 2 + 1)]
 }
+
+

@@ -12,15 +12,14 @@ resource "aws_eip" "linux-eip" {
 }
 
 # Create EC2 Instance
-resource "aws_instance" "linux-server" {
-  ami                         = data.aws_ami.ubuntu-linux-2004.id
+resource "aws_instance" "awx-server" {
+  ami                         = data.aws_ami.ubuntu-linux-1804.id
   instance_type               = var.linux_instance_type
   subnet_id                   = var.public_subnet_id
   vpc_security_group_ids      = [aws_security_group.aws-linux-sg.id]
   associate_public_ip_address = var.linux_associate_public_ip_address
   source_dest_check           = false
   key_name                    = aws_key_pair.key_pair.key_name
-  user_data                   = file("script-init.sh")
   
   # root disk
   root_block_device {
@@ -44,38 +43,9 @@ resource "aws_instance" "linux-server" {
     password = ""  
     private_key = "${file("${aws_key_pair.key_pair.key_name}.pem")}"
     host = "${self.public_ip}"
-    }
-  
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update -y",
-      "sudo apt-get upgrade -y",
-      "sudo apt-get install nginx -y",
-      "sudo systemctl start nginx"
-    ]
   }
 
-  # provisioner "file" {
-  #   source      = "./script-init.sh"
-  #   destination = "/tmp/script-init.sh"
-  # }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "sudo sed -i '/^[^#]*PasswordAuthentication[[:space:]]no/c\\PasswordAuthentication yes' /etc/ssh/sshd_config",
-  #     "sudo -i systemctl restart sshd",
-  #     "echo 'ubuntu:ubuntu' | sudo chpasswd",
-  #     "tr -d '\r' </tmp/script-init.sh >a.tmp",
-  #     "mv a.tmp script-init.sh",
-  #     "chmod +x ./script-init.sh",
-  #     "sudo ./script-init.sh"
-  #   ]
-  # }
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "echo test"
-  #   ]
-  # }
   tags = {
     Name        = "${lower(var.app_name)}"
     Environment = var.app_environment
@@ -84,7 +54,7 @@ resource "aws_instance" "linux-server" {
 
 # Associate Elastic IP to Linux Server
 resource "aws_eip_association" "linux-eip-association" {
-  instance_id   = aws_instance.linux-server.id
+  instance_id   = aws_instance.awx-server.id
   allocation_id = aws_eip.linux-eip.id
 }
 
@@ -100,6 +70,13 @@ resource "aws_security_group" "aws-linux-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow incoming HTTP connections"
+  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow incoming HTTPS connections"
   }
 
   ingress {

@@ -1,0 +1,41 @@
+---
+- hosts: all
+  tasks:
+    - name: Clone awx repo
+      ansible.builtin.git:
+        repo: https://github.com/ansible/awx.git
+        dest: ~/awx
+        clone: yes
+    
+
+    - name: use python 3.9.0
+      shell:
+        cmd: pyenv local 3.9.0
+        chdir: ~/awx
+      args:
+        executable: /bin/bash
+
+    - name: install ansible
+      shell:
+        cmd: python install ansible
+        chdir: ~/awx
+      args:
+        executable: /bin/bash
+
+    - name: run docker-compose
+      shell:
+        cmd: "make docker-compose COMPOSE_UP_OPTS=-d"
+        chdir: ~/awx
+      args:
+        executable: /bin/bash
+      
+    - name: run docker-compose
+      shell:
+        cmd: "docker exec tools_awx_1 make clean-ui ui-devel"
+      
+      args:
+        executable: /bin/bash
+    # - name: create user to login with
+    #   shell:
+    #     cmd: "docker exec tools_awx_1 make clean-ui ui-devel"
+        
