@@ -2,6 +2,23 @@
 ## Virtual Machine Module - Main ##
 ###################################
 
+# UBUNTU AWS AMI
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
 # Create Elastic IP for the EC2 instance
 resource "aws_eip" "linux-eip" {
   vpc  = true
@@ -13,7 +30,7 @@ resource "aws_eip" "linux-eip" {
 
 # Create EC2 Instance
 resource "aws_instance" "awx-server" {
-  ami                         = data.aws_ami.ubuntu-linux-1804.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.linux_instance_type
   subnet_id                   = var.public_subnet_id
   vpc_security_group_ids      = [aws_security_group.aws-linux-sg.id]
