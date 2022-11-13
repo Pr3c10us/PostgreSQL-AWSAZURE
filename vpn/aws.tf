@@ -29,7 +29,7 @@ resource "aws_customer_gateway" "azure" {
   tags = {
     Name = "azure-vpn-customer-gateway"
   }
-  depends_on = [ azurerm_public_ip.gateway ]
+  depends_on = [azurerm_public_ip.gateway]
 }
 
 resource "aws_vpn_connection" "azure" {

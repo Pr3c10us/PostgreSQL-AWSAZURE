@@ -64,11 +64,11 @@ resource "tls_private_key" "example_ssh" {
 
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "myterraformvm" {
-  name                  = "azure-pg"
-  location              = azurerm_resource_group.rg.location
-  resource_group_name   = azurerm_resource_group.rg.name
-  network_interface_ids = [azurerm_network_interface.myterraformnic.id]
-  size                  = "Standard_D2ads_v5"
+  name                            = "azure-pg"
+  location                        = azurerm_resource_group.rg.location
+  resource_group_name             = azurerm_resource_group.rg.name
+  network_interface_ids           = [azurerm_network_interface.myterraformnic.id]
+  size                            = "Standard_D2ads_v5"
   admin_username                  = "azureuser"
   admin_password                  = "P@ssw0rd1234!"
   disable_password_authentication = false
@@ -100,10 +100,10 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
   # provisioner "remote-exec" {
   #   inline = [
   #     "echo done",
-      # "tr -d '\r' </tmp/script-init.sh >a.tmp",
-      # "mv a.tmp script-init.sh",
-      # "chmod +x ./script-init.sh",
-      # "sudo ./script-init.sh",
+  # "tr -d '\r' </tmp/script-init.sh >a.tmp",
+  # "mv a.tmp script-init.sh",
+  # "chmod +x ./script-init.sh",
+  # "sudo ./script-init.sh",
   #   ]
   # }
   # provisioner "remote-exec" {

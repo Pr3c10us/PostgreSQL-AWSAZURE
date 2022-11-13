@@ -138,7 +138,7 @@ resource "aws_lambda_function" "rds_create_snaphsot" {
   ]
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/python/replicate_function.zip")
-  timeout = 60
+  timeout          = 60
 }
 
 resource "aws_lambda_function" "rds_create_instance" {
@@ -156,8 +156,8 @@ resource "aws_lambda_function" "rds_create_instance" {
   ]
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/python/create_database_instance_function.zip")
-  timeout = 60
- 
+  timeout          = 60
+
   environment {
     variables = {
       hosted_zone_id = "${aws_route53_zone.private.zone_id}"
@@ -179,8 +179,8 @@ resource "aws_lambda_function" "switch_blue_green_function" {
   ]
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/python/switch_blue_to_green_function.zip")
-  timeout = 60
- 
+  timeout          = 60
+
   environment {
     variables = {
       hosted_zone_id = "${aws_route53_zone.private.zone_id}"
@@ -206,8 +206,8 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_cloudwatch_event_target" "yada" {
-  rule      = aws_cloudwatch_event_rule.console.name
-  arn       = aws_lambda_function.rds_create_instance.arn
+  rule = aws_cloudwatch_event_rule.console.name
+  arn  = aws_lambda_function.rds_create_instance.arn
 }
 
 resource "aws_cloudwatch_event_rule" "console" {
