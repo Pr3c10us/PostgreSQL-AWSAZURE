@@ -1,6 +1,6 @@
 # Create a resource group
 resource "azurerm_resource_group" "rg" {
-  name      = var.azure_resource_group_name
+  name      = var.resource_group_name
   location  = var.azure_location
 }
 
