@@ -1,9 +1,14 @@
+# Create a resource group
+resource "azurerm_resource_group" "rg" {
+  name      = var.azure_resource_group_name
+  location  = var.azure_location
+}
 
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "myterraformnsg" {
   name                = "NetworkSecurityGroup"
-  location            = var.resource_group_location
-  resource_group_name = var.resource_group_name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 
   security_rule {
     name                       = "SSH"
@@ -21,8 +26,8 @@ resource "azurerm_network_security_group" "myterraformnsg" {
 # Create network interface
 resource "azurerm_network_interface" "myterraformnic" {
   name                = "AZ_NIC"
-  location            = var.resource_group_location
-  resource_group_name = var.resource_group_name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
     name                          = "myNicConfiguration"
@@ -41,7 +46,7 @@ resource "azurerm_network_interface_security_group_association" "example" {
 resource "random_id" "randomId" {
   keepers = {
     # Generate a new ID only when a new resource group is defined
-    resource_group = var.resource_group_name
+    resource_group = azurerm_resource_group.rg.name
   }
 
   byte_length = 8
@@ -50,8 +55,8 @@ resource "random_id" "randomId" {
 # Create storage account for boot diagnostics
 resource "azurerm_storage_account" "mystorageaccount" {
   name                     = "diag${random_id.randomId.hex}"
-  location                 = var.resource_group_location
-  resource_group_name      = var.resource_group_name
+  location                 = azurerm_resource_group.rg.location
+  resource_group_name      = azurerm_resource_group.rg.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
@@ -65,8 +70,8 @@ resource "tls_private_key" "example_ssh" {
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "myterraformvm" {
   name                            = "azure-pg"
-  location                        = var.resource_group_location
-  resource_group_name             = var.resource_group_name
+  location                        = azurerm_resource_group.rg.location
+  resource_group_name             = azurerm_resource_group.rg.name
   network_interface_ids           = [azurerm_network_interface.myterraformnic.id]
   size                            = "Standard_D2ads_v5"
   admin_username                  = "azureuser"
@@ -85,32 +90,32 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     sku       = "18.04-LTS"
     version   = "latest"
   }
-  connection {
-    type        = "ssh"
-    host     = self.public_ip_address
-    user     = self.admin_username
-    private_key = tls_private_key.example_ssh.private_key_pem
-  }
-  provisioner "file" {
-    source      = "./script-init.sh"
-    destination = "/tmp/script-init.sh"
+  # connection {
+  #   type        = "ssh"
+  #   host     = self.public_ip_address
+  #   user     = self.admin_username
+  #   private_key = tls_private_key.example_ssh.private_key_pem
+  # }
+  # provisioner "file" {
+  #   source      = "./script-init.sh"
+  #   destination = "/tmp/script-init.sh"
 
-  }
+  # }
 
-  provisioner "remote-exec" {
-    inline = [
-      "echo done",
-  "tr -d '\r' </tmp/script-init.sh >a.tmp",
-  "mv a.tmp script-init.sh",
-  "chmod +x ./script-init.sh",
-  "sudo ./script-init.sh",
-    ]
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "echo ${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}",
-      "#sudo -i -u postgres sshpass -p 'postgres' ssh-copy-id postgres@${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}",
-    ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "echo done",
+  # "tr -d '\r' </tmp/script-init.sh >a.tmp",
+  # "mv a.tmp script-init.sh",
+  # "chmod +x ./script-init.sh",
+  # "sudo ./script-init.sh",
+  #   ]
+  # }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "echo ${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}",
+  #     "#sudo -i -u postgres sshpass -p 'postgres' ssh-copy-id postgres@${azurerm_linux_virtual_machine.myterraformvm.public_ip_address}",
+  #   ]
+  # }
 }
 
